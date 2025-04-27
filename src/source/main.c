@@ -4,17 +4,19 @@
 
 #include "lexical.h"
 
-void writeOutputFile(FILE *output, Token token) {
+void writeOutputFile(Token token) {
+    printf("%s\n", token.lexeme);
+    printf("%d\n", token.type);
     //escreve arquivo
 }
 
 int main(int argc, char * argv[]) {
     static char* input_path;
-    static char* output_path = "/files/output.txt";
+    // static char* output_path = "/files/output.txt";
 
     if(argc == 3){
         input_path = argv[1];
-        output_path = argv[2];
+        // output_path = argv[2];
     } else if(argc == 2) {
         input_path = argv[1];
     } else {
@@ -29,19 +31,22 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
-    FILE *output_file = fopen(output_path, "w");
-    if (!output_file) {
-        printf("Erro ao criar saida.txt\n");
-        fclose(input_file);
-        return 1;
-    }
+    // FILE *output_file = fopen(output_path, "w");
+    // if (!output_file) {
+    //     printf("Erro ao criar saida.txt\n");
+    //     fclose(input_file);
+    //     return 1;
+    // }
 
     // Token *list_token = malloc(sizeof(Token)*1024);
     Token token;
     int i = 0;
     do {
         token = get_token(input_file);
-        writeOutputFile(output_file, token);
+        writeOutputFile(token);
+        i++;
+
+        if(i==15) break;
     } while (token.type != TOKEN_EOF);
 
     return 0;
