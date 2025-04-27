@@ -17,6 +17,8 @@ typedef enum {
     TOKEN_PALAVRA_RESERVADA,
     TOKEN_OPERADOR,
     TOKEN_SIMBOLO,
+    TOKEN_MINUS,
+    TOKEN_MINUS_EQUAL,
     TOKEN_ERROR,
     TOKEN_BEGIN, TOKEN_END, TOKEN_IF, TOKEN_THEN, TOKEN_WHILE,
     TOKEN_DO, TOKEN_CONST, TOKEN_VAR, TOKEN_PROCEDURE, TOKEN_CALL, TOKEN_ODD,
@@ -27,6 +29,7 @@ typedef enum {
     ALPHA,
     NUM,
     MINUS,
+    EQUAL,
     SPACE,
     ERROR,
 
@@ -62,6 +65,8 @@ extern Keyword keywords[];
 typedef enum {
     Q0,         // INITIAL STATE
     Q1,         // IDENTIFIER STATE
+    Q2,
+    Q3,
     Q_ERROR,    // ERROR STATE
     QFINISH,
 
@@ -71,5 +76,8 @@ typedef enum {
 typedef state_num (*state_callback)(char symbol, Token *token);
 
 Token get_token(FILE *input);
+
+extern state_callback states[];
+extern state_num state_transactions[NUM_STATES][NUM_ALPHABET];
 
 #endif // LEXICAL_H_

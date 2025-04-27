@@ -4,16 +4,6 @@
 
 #include "state_callback.h"
 
-state_callback states[] = {
-    q0_callback, q1_callback, qerror, qfinish
-};
-
-state_num state_transactions[NUM_STATES][NUM_ALPHABET] = {
-    {Q1     , Q_ERROR, Q_ERROR, Q_ERROR, Q_ERROR},
-    {Q1     , QFINISH, QFINISH, QFINISH, QFINISH},
-    {QFINISH, QFINISH, QFINISH, QFINISH, QFINISH},
-};
-
 Alphabet classifier(char symbol) {
     if (('a' <= symbol && symbol <= 'z') || ('A' <= symbol && symbol <= 'Z')) return ALPHA;
 
@@ -22,6 +12,8 @@ Alphabet classifier(char symbol) {
     switch (symbol) {
         case '<':
             return MINUS;
+        case '=':
+            return EQUAL;
         default:
             return ERROR;
     }
@@ -52,6 +44,16 @@ state_num q0_callback(char symbol, Token *token) {
  * Identifier
  */
 state_num q1_callback(char symbol, Token *token) { return generic_callback(symbol, token, TOKEN_IDENTIFIER, Q1); }
+
+/**
+ * Minus
+ */
+state_num q2_callback(char symbol, Token *token) { return generic_callback(symbol, token, TOKEN_MINUS, Q2); }
+
+/**
+ * Minus Equal
+ */
+state_num q3_callback(char symbol, Token *token) { return generic_callback(symbol, token, TOKEN_MINUS_EQUAL, Q3); }
 
 /**
  * Error state
