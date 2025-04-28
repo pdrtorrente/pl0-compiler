@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "state_callback.h"
 
@@ -18,21 +19,26 @@ Keyword keywords[] = {
     {"call", TOKEN_CALL}, 
     {"odd", TOKEN_ODD}
 };
+#define NUM_KEYWORDS (sizeof(keywords) / sizeof(Keyword))
 
 // Lista de símbolos reservados
-Keyword simbols[] = {
-    {"+", TOKEN_PLUS},
-    {"-", TOKEN_MINUS},
-    {"*", TOKEN_MULTIPLY},
-    {"/", TOKEN_DIVIDE},
-    {"=", TOKEN_EQUAL},
-    {"(", TOKEN_LPAREN},
-    {")", TOKEN_RPAREN},
-    {";", TOKEN_SEMICOLON},
+Symbol simbols[] = {
+    {'+', TOKEN_PLUS},
+    {'-', TOKEN_MINUS},
+    {'*', TOKEN_MULTIPLY},
+    {'/', TOKEN_DIVIDE},
+    {'=', TOKEN_EQUAL},
+    {'(', TOKEN_LPAREN},
+    {')', TOKEN_RPAREN},
+    {';', TOKEN_SEMICOLON},
+    {',', TOKEN_COMMA},
+    {'.', TOKEN_PERIOD}
 };
+#define NUM_SIMBOLS (sizeof(simbols) / sizeof(Symbol))
 
 const char* token_names[] = {
     "token_undefined",
+    "token_comment",
     "token_identifier",
     "token_number",
     "token_palavra_reservada",
@@ -61,6 +67,8 @@ const char* token_names[] = {
     "token_lparen",
     "token_rparen",
     "token_semicolon",
+    "token_comma",
+    "token_period",
 
     // Operadores relacionais e de atribuição
     "token_greater",
@@ -70,8 +78,6 @@ const char* token_names[] = {
     "token_different",
     "token_assign"
 };
-
-#define NUM_KEYWORDS (sizeof(keywords) / sizeof(Keyword))
 
 void backtracking(FILE *input, char *str) {
     // Remove o último caracter da string do token
@@ -84,10 +90,33 @@ void backtracking(FILE *input, char *str) {
     fseek(input, -1, SEEK_CUR);
 }
 
+// Compara duas strings ignorando maiúsculas e minúsculas
+int strcmp_no_case(const char *s1, const char *s2) {
+    while (*s1 && *s2) {
+        if (tolower((unsigned char)*s1) != tolower((unsigned char)*s2)) {
+            return 0; // são diferentes
+        }
+        s1++;
+        s2++;
+    }
+    // Se ambas terminaram, são iguais
+    return *s1 == *s2;
+}
+
 // Identifier and Keywords
 Token q2_callback(FILE *input, char symbol, Token *token) { 
-    token->type = TOKEN_IDENTIFIER;
     backtracking(input, token->lexeme);
+
+    // Verifica se o lexema é uma palavra reservada
+    for (int i = 0; i < NUM_KEYWORDS; i++) {
+        if (strcmp_no_case(token->lexeme, keywords[i].lexeme) == 1) {
+            token->type = keywords[i].type;
+            return *token;
+        }
+    }
+
+    // Se não for, é um identificador
+    token->type = TOKEN_IDENTIFIER;
     return *token;
 }
 
@@ -143,10 +172,9 @@ Token q14_callback(FILE *input, char symbol, Token *token) {
     return *token; 
 }
 
-// Comentários --> acho que a ideia é só consumir os comentários
+// Comentários
 Token q16_callback(FILE *input, char symbol, Token *token) { 
-    token->type = TOKEN_UNDEFINED;
-    backtracking(input, token->lexeme);
+    token->type = TOKEN_COMMENT;
     return *token; 
 }
 
@@ -158,7 +186,13 @@ Token q17_callback(FILE *input, char symbol, Token *token) {
 
 // Símbolos Reservados
 Token q18_callback(FILE *input, char symbol, Token *token) { 
-    token->type = TOKEN_PALAVRA_RESERVADA;
+    // Encontra o símbolo na lista de símbolos reservados
+    for (int i = 0; i < NUM_SIMBOLS; i++) {
+        if (token->lexeme[0] == simbols[i].c) {
+            token->type = simbols[i].type;
+            return *token;
+        }
+    }
     return *token; 
 }
 

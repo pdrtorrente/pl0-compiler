@@ -3,6 +3,8 @@
 
 typedef enum {
     TOKEN_UNDEFINED,
+
+    TOKEN_COMMENT,
     TOKEN_IDENTIFIER,
     TOKEN_NUMBER,
     TOKEN_PALAVRA_RESERVADA,
@@ -31,6 +33,8 @@ typedef enum {
     TOKEN_LPAREN,       // '('
     TOKEN_RPAREN,       // ')'
     TOKEN_SEMICOLON,    // ';'
+    TOKEN_COMMA,        // ','
+    TOKEN_PERIOD,       // '.'
 
     // Tokens para operadores relacionais e de atribuição
     TOKEN_GREATER,      // '>'

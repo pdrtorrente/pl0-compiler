@@ -1,3 +1,23 @@
->=
-x
-oi
+{ Programa exemplo em PL/0 }
+{ Este programa calcula o fatorial de um número }
+
+const max = 5;       { Define o valor máximo para o cálculo do fatorial }
+var n, result;       { Declaração das variáveis }
+
+procedure factorial; { Procedimento para calcular o fatorial }
+var i;               { Variável local para iteração }
+begin
+    result := 1;     { Inicializa o resultado como 1 }
+    i := n;          { Define o valor inicial de i como n }
+    while i > 0 do   { Enquanto i for maior que 0 }
+    begin
+        result := result * i; { Multiplica o resultado pelo valor atual de i }
+        i := i - 1;           { Decrementa i }
+    end
+end;
+
+begin
+    n := max;        { Define o valor de n como o valor máximo }
+    call factorial;  { Chama o procedimento para calcular o fatorial }
+    ! result;        { Imprime o resultado }
+end.

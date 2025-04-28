@@ -9,8 +9,8 @@ state_num state_transitions[NUM_STATES-NUM_FINAL_STATES][NUM_ALPHABET] = {
     /* Q3 */  {Q4, Q17, Q3, Q4, Q4, Q4, Q4, Q4, Q4, Q4, Q17}, // Números
     /* Q5 */  {Q7, Q7, Q7, Q7, Q6, Q7, Q7, Q7, Q7, Q7, Q17}, // >
     /* Q8 */  {Q11, Q11, Q11, Q9, Q10, Q11, Q11, Q11, Q11, Q11, Q17}, // <
-    /* Q12 */ {Q14, Q14, Q14, Q14, Q13, Q14, Q14, Q14, Q14, Q14, Q17 }, // :
-    /* Q15 */ {Q15, Q15, Q15, Q15, Q15, Q15, Q15, Q15, Q16, Q15, Q15 }, // {
+    /* Q12 */ {Q14, Q14, Q14, Q14, Q13, Q14, Q14, Q14, Q14, Q14, Q17}, // :
+    /* Q15 */ {Q15, Q15, Q15, Q15, Q15, Q15, Q15, Q15, Q16, Q15, Q15}, // {
 };
 
 // Conjunto de estados finais
@@ -56,7 +56,7 @@ int find_column(char c) {
         return 7;
     else if (c == '}')
         return 8;
-    else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')' || c == ';')
+    else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')' || c == ';' || c == ',' || c == '.')
         return 9;
     else
         return 10; // Caso não seja um símbolo do alfabeto

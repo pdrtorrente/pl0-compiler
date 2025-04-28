@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "lexical.h"
+
+#define MAX_TOKEN_LENGTH // Maximum value for a 32-bit signed integer
 
 void writeOutputFile(Token token) {
     printf("%s, ", token.lexeme);
@@ -39,14 +40,15 @@ int main(int argc, char * argv[]) {
     // }
 
     Token token;
-    int i = 0;
-    do {
+    while(1) {
         token = get_token(input_file);
-        writeOutputFile(token);
-        i++;
-
-        if(i==15) break;
-    } while (token.type != TOKEN_EOF);
+        if (token.type == TOKEN_EOF) {
+            break; // Finaliza o loop se o token for EOF
+        } else if (token.type != TOKEN_COMMENT) {
+            // Escreve no arquivo de saída apenas se não for um comentário
+            writeOutputFile(token);
+        }
+    }
 
     return 0;
 }

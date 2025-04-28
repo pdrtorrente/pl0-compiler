@@ -38,14 +38,13 @@ Token get_token(FILE *input) {
         c = fgetc(input);
 
         // Ignora espaços quando estamos no estado inicial
-        if(current_state == Q0 && isspace(c)) {
+        if(current_state == Q0 && isspace(c))
             continue; // Ignora espaços em branco
-        }
 
         // Ignora comentários
-        if(current_state == Q15 && c != '}') {
+        if(current_state == Q15 && c != '}')
             continue; // Ignora caracteres dentro das chaves
-        }
+
 
         // Adiciona o caracter lido na string do token
         int len = strlen(token.lexeme);

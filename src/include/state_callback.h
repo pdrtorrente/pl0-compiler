@@ -12,7 +12,12 @@ typedef struct {
     TokenType type;
 } Keyword;
 
-extern Keyword keywords[];
+// Reserved symbols
+typedef struct {
+    const char c;
+    TokenType type;
+} Symbol;
+
 extern const char* token_names[];
 
 Token q2_callback(FILE *input, char symbol, Token *token);
