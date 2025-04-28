@@ -5,8 +5,8 @@
 #include "lexical.h"
 
 void writeOutputFile(Token token) {
-    printf("%s\n", token.lexeme);
-    printf("%d\n", token.type);
+    printf("%s, ", token.lexeme);
+    printf("%s\n", token_names[token.type]);
     //escreve arquivo
 }
 
@@ -38,7 +38,6 @@ int main(int argc, char * argv[]) {
     //     return 1;
     // }
 
-    // Token *list_token = malloc(sizeof(Token)*1024);
     Token token;
     int i = 0;
     do {

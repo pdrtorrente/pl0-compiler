@@ -3,51 +3,61 @@
 #include <string.h>
 
 #include "lexical.h"
-#include "state_callback.h"
-
-Keyword keywords[] = {
-    {"begin", TOKEN_BEGIN}, {"end", TOKEN_END}, {"if", TOKEN_IF},
-    {"then", TOKEN_THEN}, {"while", TOKEN_WHILE}, {"do", TOKEN_DO},
-    {"const", TOKEN_CONST}, {"var", TOKEN_VAR}, {"procedure", TOKEN_PROCEDURE},
-    {"call", TOKEN_CALL}, {"odd", TOKEN_ODD}
-};
-
-#define NUM_KEYWORDS (sizeof(keywords) / sizeof(Keyword))
-
+#include "tabela.h"
 state_callback states[] = {
-    q0_callback, q1_callback, q2_callback, q3_callback, qerror, qfinish
+    q2_callback, q4_callback, q6_callback, q7_callback, q9_callback, q10_callback, 
+    q11_callback, q13_callback, q14_callback, q16_callback, q17_callback, q18_callback
 };
 
-state_num state_transactions[NUM_STATES][NUM_ALPHABET] = {
-    {Q1     , Q_ERROR, Q2     , Q_ERROR, Q_ERROR, Q_ERROR}, // estado inicial
-    {Q1     , QFINISH, QFINISH, QFINISH, QFINISH, QFINISH}, // identificador
-    {QFINISH, QFINISH, QFINISH, Q3     , QFINISH, QFINISH}, // menor
-    {QFINISH, QFINISH, QFINISH, QFINISH, QFINISH, QFINISH}, // menor igual
-    {QFINISH, QFINISH, QFINISH, QFINISH, QFINISH, QFINISH}, // finish
-    {QFINISH, QFINISH, QFINISH, QFINISH, QFINISH, QFINISH}, // error
-};// alfa      num       minus   equal    space     error
-
-Token get_token(FILE *input) {
-    //implementação
-    char c;
-    state_num current_state = Q0;
-    Token current_token = {TOKEN_UNDEFINED, "", 0, false};
-    do {
-        if (current_state != QFINISH) c = fgetc(input);
-
-        current_state = states[current_state](c, &current_token);
-        if (current_token.tkn_ready && c != EOF) {
-            fseek(input, -1, SEEK_CUR);
-            break;
+int isFinal(state_num Q) {
+    for (int i = 0; i < NUM_FINAL_STATES; i++) {
+        if (final_states[i] == Q) {
+            return i;
         }
-
-        if (c == EOF && !current_token.tkn_ready) {
-            ungetc(c, input);
-        }
-    } while (c != EOF || !current_token.tkn_ready);
-
-    if (c == EOF && current_token.type == TOKEN_ERROR) {
-        current_token.type = TOKEN_EOF;
     }
-    return current_token;
+    return -1;
+}
+
+//implementação
+Token get_token(FILE *input) {
+    state_num current_state = Q0;
+    char c;
+    Token token = {TOKEN_UNDEFINED, "", 0};
+    
+    do {
+        /*
+            Se o estado atual for um estado final, retornamos 
+            o resultado para a main (analisador sintático)
+        */
+        int final = isFinal(current_state);
+        if (final >= 0) {
+            return states[final](input, c, &token);
+        }
+
+        // Lê um caracter
+        c = fgetc(input);
+
+        // Ignora espaços quando estamos no estado inicial
+        if(current_state == Q0 && isspace(c)) {
+            continue; // Ignora espaços em branco
+        }
+
+        // Ignora comentários
+        if(current_state == Q15 && c != '}') {
+            continue; // Ignora caracteres dentro das chaves
+        }
+
+        // Adiciona o caracter lido na string do token
+        int len = strlen(token.lexeme);
+        token.lexeme[len] = c;
+        token.lexeme[len + 1] = '\0';
+
+        // Faz a transição para o próximo estado de acordo com a tabela
+        int line = find_line(current_state);
+        int column = find_column(c);
+        current_state = state_transitions[line][column];
+    } while (c != EOF);
+
+   token.type = TOKEN_EOF;
+   return token;
 }

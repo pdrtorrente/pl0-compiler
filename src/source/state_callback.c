@@ -4,72 +4,165 @@
 
 #include "state_callback.h"
 
-Alphabet classifier(char symbol) {
-    if (('a' <= symbol && symbol <= 'z') || ('A' <= symbol && symbol <= 'Z')) return ALPHA;
+// Lista de palavras reservadas
+Keyword keywords[] = {
+    {"begin", TOKEN_BEGIN}, 
+    {"end", TOKEN_END}, 
+    {"if", TOKEN_IF},
+    {"then", TOKEN_THEN}, 
+    {"while", TOKEN_WHILE}, 
+    {"do", TOKEN_DO},
+    {"const", TOKEN_CONST},
+    {"var", TOKEN_VAR},
+    {"procedure", TOKEN_PROCEDURE},
+    {"call", TOKEN_CALL}, 
+    {"odd", TOKEN_ODD}
+};
 
-    if (isdigit(symbol)) return NUM;
-    
-    switch (symbol) {
-        case '<':
-            return MINUS;
-        case '=':
-            return EQUAL;
-        default:
-            return ERROR;
+// Lista de símbolos reservados
+Keyword simbols[] = {
+    {"+", TOKEN_PLUS},
+    {"-", TOKEN_MINUS},
+    {"*", TOKEN_MULTIPLY},
+    {"/", TOKEN_DIVIDE},
+    {"=", TOKEN_EQUAL},
+    {"(", TOKEN_LPAREN},
+    {")", TOKEN_RPAREN},
+    {";", TOKEN_SEMICOLON},
+};
+
+const char* token_names[] = {
+    "token_undefined",
+    "token_identifier",
+    "token_number",
+    "token_palavra_reservada",
+
+    // Palavras reservadas
+    "token_begin",
+    "token_end",
+    "token_if",
+    "token_then",
+    "token_while",
+    "token_do",
+    "token_const",
+    "token_var",
+    "token_procedure",
+    "token_call",
+    "token_odd",
+    "token_eof",
+    "token_error",
+
+    // Operadores e símbolos reservados
+    "token_plus",
+    "token_minus",
+    "token_multiply",
+    "token_divide",
+    "token_equal",
+    "token_lparen",
+    "token_rparen",
+    "token_semicolon",
+
+    // Operadores relacionais e de atribuição
+    "token_greater",
+    "token_greater_eq",
+    "token_less",
+    "token_less_eq",
+    "token_different",
+    "token_assign"
+};
+
+#define NUM_KEYWORDS (sizeof(keywords) / sizeof(Keyword))
+
+void backtracking(FILE *input, char *str) {
+    // Remove o último caracter da string do token
+    int len = strlen(str);
+    if (len > 0) {
+        str[len - 1] = '\0';
     }
+
+    // Volta em 1 posição o ponteiro do arquivo de entrada
+    fseek(input, -1, SEEK_CUR);
 }
 
-state_num generic_callback(char symbol, Token *token, TokenType type, state_num current_state) {
-    Alphabet symbol_type = classifier(symbol);
-    state_num next_state = state_transactions[current_state][symbol_type];
-
-    token->type = type;
-    token->lexeme[token->it++] = symbol;
-    return next_state;
+// Identifier and Keywords
+Token q2_callback(FILE *input, char symbol, Token *token) { 
+    token->type = TOKEN_IDENTIFIER;
+    backtracking(input, token->lexeme);
+    return *token;
 }
 
-
-/**
- * Initial state
- */
-state_num q0_callback(char symbol, Token *token) {
-    Alphabet symbol_type = classifier(symbol);
-    state_num next_state = state_transactions[Q0][symbol_type];
-
-    token->lexeme[token->it++] = symbol;
-    return next_state;
+// Números reais interos
+Token q4_callback(FILE *input, char symbol, Token *token) { 
+    token->type = TOKEN_NUMBER;
+    backtracking(input, token->lexeme);
+    return *token;
 }
 
-/**
- * Identifier
- */
-state_num q1_callback(char symbol, Token *token) { return generic_callback(symbol, token, TOKEN_IDENTIFIER, Q1); }
+// '>='
+Token q6_callback(FILE *input, char symbol, Token *token) { 
+    token->type = TOKEN_GREATER_EQ;
+    return *token; 
+}
 
-/**
- * Minus
- */
-state_num q2_callback(char symbol, Token *token) { return generic_callback(symbol, token, TOKEN_MINUS, Q2); }
+// '>'
+Token q7_callback(FILE *input, char symbol, Token *token) { 
+    token->type = TOKEN_GREATER;
+    backtracking(input, token->lexeme);
+    return *token; 
+}
 
-/**
- * Minus Equal
- */
-state_num q3_callback(char symbol, Token *token) { return generic_callback(symbol, token, TOKEN_MINUS_EQUAL, Q3); }
+// '<>'
+Token q9_callback(FILE *input, char symbol, Token *token) { 
+    token->type = TOKEN_DIFFERENT;
+    return *token; 
+}
 
-/**
- * Error state
- */
-state_num qerror(char symbol, Token *token) {
+// '<='
+Token q10_callback(FILE *input, char symbol, Token *token) { 
+    token->type = TOKEN_LESS_EQ;
+    return *token; 
+}
+
+// '<'
+Token q11_callback(FILE *input, char symbol, Token *token) { 
+    token->type = TOKEN_LESS;
+    backtracking(input, token->lexeme);
+    return *token; 
+}
+
+// ':='
+Token q13_callback(FILE *input, char symbol, Token *token) { 
+    token->type = TOKEN_ASSIGN;
+    return *token; 
+}
+
+// ':' --> ERROR
+Token q14_callback(FILE *input, char symbol, Token *token) { 
     token->type = TOKEN_ERROR;
-    token->lexeme[token->it] = '\0';
-    token->tkn_ready = true;
-    return Q_ERROR;
+    backtracking(input, token->lexeme);
+    return *token; 
 }
 
-/**
- * Finish state
- */
-state_num qfinish(char symbol, Token *token) {
+// Comentários --> acho que a ideia é só consumir os comentários
+Token q16_callback(FILE *input, char symbol, Token *token) { 
+    token->type = TOKEN_UNDEFINED;
+    backtracking(input, token->lexeme);
+    return *token; 
+}
+
+// ERROR
+Token q17_callback(FILE *input, char symbol, Token *token) { 
+    token->type = TOKEN_ERROR;
+    return *token; 
+}
+
+// Símbolos Reservados
+Token q18_callback(FILE *input, char symbol, Token *token) { 
+    token->type = TOKEN_PALAVRA_RESERVADA;
+    return *token; 
+}
+
+Token qfinish(char symbol, Token *token) {
     token->lexeme[--token->it] = '\0';
-    token->tkn_ready = true;
-    return Q0;
+    return *token;
 }
