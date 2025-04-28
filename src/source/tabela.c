@@ -3,14 +3,14 @@
 #include "tabela.h"
 
 state_num state_transitions[NUM_INTERMEDIATE_STATE][NUM_ALPHABET] = {
-    //        Espaço Letra Dígito '>'  '='  '<'  ':'  '{'  '}'  Símbolo Simb_Inválido
-    /* Q0 */  {Q0, Q1, Q3, Q5, Q18, Q8, Q12, Q15, Q17, Q18, Q17}, // Estado inicial
-    /* Q1 */  {Q2, Q1, Q1, Q2, Q2, Q2, Q2, Q2, Q2, Q2, Q2}, // IDs
-    /* Q3 */  {Q4, Q17, Q3, Q4, Q4, Q4, Q4, Q4, Q4, Q4, Q17}, // Números
-    /* Q5 */  {Q7, Q7, Q7, Q7, Q6, Q7, Q7, Q7, Q7, Q7, Q17}, // >
-    /* Q8 */  {Q11, Q11, Q11, Q9, Q10, Q11, Q11, Q11, Q11, Q11, Q17}, // <
-    /* Q12 */ {Q14, Q14, Q14, Q14, Q13, Q14, Q14, Q14, Q14, Q14, Q17}, // :
-    /* Q15 */ {Q15, Q15, Q15, Q15, Q15, Q15, Q15, Q15, Q16, Q15, Q15}, // {
+    //       Espaço|Letra|Dígito| '>'| '='| '<'| ':'| '{'| '}'|Símb|Simb_Inválido
+    /* Q0 */  {Q0  , Q1  , Q3   , Q5 , Q18, Q8 , Q12, Q15, Q17, Q18, Q17}, // Estado inicial
+    /* Q1 */  {Q2  , Q1  , Q1   , Q2 , Q2 , Q2 , Q2 , Q2 , Q2 , Q2 , Q2 }, // IDs
+    /* Q3 */  {Q4  , Q17 , Q3   , Q4 , Q4 , Q4 , Q4 , Q4 , Q4 , Q4 , Q17}, // Números
+    /* Q5 */  {Q7  , Q7  , Q7   , Q7 , Q6 , Q7 , Q7 , Q7 , Q7 , Q7 , Q17}, // >
+    /* Q8 */  {Q11 , Q11 , Q11  , Q9 , Q10, Q11, Q11, Q11, Q11, Q11, Q17}, // <
+    /* Q12 */ {Q14 , Q14 , Q14  , Q14, Q13, Q14, Q14, Q14, Q14, Q14, Q17}, // :
+    /* Q15 */ {Q15 , Q15 , Q15  , Q15, Q15, Q15, Q15, Q15, Q16, Q15, Q15}, // {
 };
 
 int find_column(char c) {
