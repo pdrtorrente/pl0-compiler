@@ -20,17 +20,17 @@ typedef struct {
 
 extern const char* token_names[];
 
-Token q2_callback(FILE *input, char symbol, Token *token);
-Token q4_callback(FILE *input, char symbol, Token *token);
-Token q6_callback(FILE *input, char symbol, Token *token);
-Token q7_callback(FILE *input, char symbol, Token *token);
-Token q9_callback(FILE *input, char symbol, Token *token);
-Token q10_callback(FILE *input, char symbol, Token *token);
-Token q11_callback(FILE *input, char symbol, Token *token);
-Token q13_callback(FILE *input, char symbol, Token *token);
-Token q14_callback(FILE *input, char symbol, Token *token);
-Token q16_callback(FILE *input, char symbol, Token *token);
-Token q17_callback(FILE *input, char symbol, Token *token);
-Token q18_callback(FILE *input, char symbol, Token *token);
+void q2_callback(FILE *input, char symbol, Token *token);
+void q4_callback(FILE *input, char symbol, Token *token);
+void q6_callback(FILE *input, char symbol, Token *token);
+void q7_callback(FILE *input, char symbol, Token *token);
+void q9_callback(FILE *input, char symbol, Token *token);
+void q10_callback(FILE *input, char symbol, Token *token);
+void q11_callback(FILE *input, char symbol, Token *token);
+void q13_callback(FILE *input, char symbol, Token *token);
+void q14_callback(FILE *input, char symbol, Token *token);
+void q16_callback(FILE *input, char symbol, Token *token);
+void q17_callback(FILE *input, char symbol, Token *token);
+void q18_callback(FILE *input, char symbol, Token *token);
 
 #endif //STATE_CALLBACK_

@@ -4,7 +4,7 @@ SRC     := ./src/source
 BIN     := ./bin
 HEADERS := ./src/include
 EXEC    := pl0
-TEXT    := ./files
+OUTPUT  := ./output_files
 
 # Lista de arquivos .c
 CFILES  := $(wildcard $(SRC)/*.c)
@@ -26,4 +26,4 @@ run: all
 	./$(EXEC)
 
 clean:
-	rm -f $(BIN)/*.o $(EXEC)
+	rm -f $(BIN)/*.o $(EXEC) $(OUTPUT)/*

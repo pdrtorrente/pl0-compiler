@@ -7,13 +7,9 @@
 
 #include "state_callback.h"
 
-typedef enum state_num state_num;
+typedef void (*state_callback)(FILE *input, char symbol, Token *token);
 
-typedef Token (*state_callback)(FILE *input, char symbol, Token *token);
-
-int isFinal(state_num Q);
-
-Token get_token(FILE *input);
+Token getToken(FILE *input);
 
 extern state_callback states[];
 

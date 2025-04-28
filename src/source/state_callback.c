@@ -19,6 +19,7 @@ Keyword keywords[] = {
     {"call", TOKEN_CALL}, 
     {"odd", TOKEN_ODD}
 };
+
 #define NUM_KEYWORDS (sizeof(keywords) / sizeof(Keyword))
 
 // Lista de símbolos reservados
@@ -104,99 +105,98 @@ int strcmp_no_case(const char *s1, const char *s2) {
 }
 
 // Identifier and Keywords
-Token q2_callback(FILE *input, char symbol, Token *token) { 
+void q2_callback(FILE *input, char symbol, Token *token) { 
     backtracking(input, token->lexeme);
 
     // Verifica se o lexema é uma palavra reservada
     for (int i = 0; i < NUM_KEYWORDS; i++) {
         if (strcmp_no_case(token->lexeme, keywords[i].lexeme) == 1) {
             token->type = keywords[i].type;
-            return *token;
+            return;
         }
     }
 
     // Se não for, é um identificador
     token->type = TOKEN_IDENTIFIER;
-    return *token;
+
+    // Se variável muito longa
+    if(strlen(token->lexeme) >= MAX_VAR_SIZE) token->type = TOKEN_ERROR;
+
+    return;
 }
 
 // Números reais interos
-Token q4_callback(FILE *input, char symbol, Token *token) { 
+void q4_callback(FILE *input, char symbol, Token *token) { 
     token->type = TOKEN_NUMBER;
     backtracking(input, token->lexeme);
-    return *token;
+    return;
 }
 
 // '>='
-Token q6_callback(FILE *input, char symbol, Token *token) { 
+void q6_callback(FILE *input, char symbol, Token *token) { 
     token->type = TOKEN_GREATER_EQ;
-    return *token; 
+    return; 
 }
 
 // '>'
-Token q7_callback(FILE *input, char symbol, Token *token) { 
+void q7_callback(FILE *input, char symbol, Token *token) { 
     token->type = TOKEN_GREATER;
     backtracking(input, token->lexeme);
-    return *token; 
+    return; 
 }
 
 // '<>'
-Token q9_callback(FILE *input, char symbol, Token *token) { 
+void q9_callback(FILE *input, char symbol, Token *token) { 
     token->type = TOKEN_DIFFERENT;
-    return *token; 
+    return; 
 }
 
 // '<='
-Token q10_callback(FILE *input, char symbol, Token *token) { 
+void q10_callback(FILE *input, char symbol, Token *token) { 
     token->type = TOKEN_LESS_EQ;
-    return *token; 
+    return; 
 }
 
 // '<'
-Token q11_callback(FILE *input, char symbol, Token *token) { 
+void q11_callback(FILE *input, char symbol, Token *token) { 
     token->type = TOKEN_LESS;
     backtracking(input, token->lexeme);
-    return *token; 
+    return; 
 }
 
 // ':='
-Token q13_callback(FILE *input, char symbol, Token *token) { 
+void q13_callback(FILE *input, char symbol, Token *token) { 
     token->type = TOKEN_ASSIGN;
-    return *token; 
+    return; 
 }
 
 // ':' --> ERROR
-Token q14_callback(FILE *input, char symbol, Token *token) { 
+void q14_callback(FILE *input, char symbol, Token *token) { 
     token->type = TOKEN_ERROR;
     backtracking(input, token->lexeme);
-    return *token; 
+    return; 
 }
 
 // Comentários
-Token q16_callback(FILE *input, char symbol, Token *token) { 
+void q16_callback(FILE *input, char symbol, Token *token) { 
     token->type = TOKEN_COMMENT;
-    return *token; 
+    return; 
 }
 
 // ERROR
-Token q17_callback(FILE *input, char symbol, Token *token) { 
+void q17_callback(FILE *input, char symbol, Token *token) { 
     token->type = TOKEN_ERROR;
-    return *token; 
+    return; 
 }
 
 // Símbolos Reservados
-Token q18_callback(FILE *input, char symbol, Token *token) { 
+void q18_callback(FILE *input, char symbol, Token *token) { 
     // Encontra o símbolo na lista de símbolos reservados
     for (int i = 0; i < NUM_SIMBOLS; i++) {
         if (token->lexeme[0] == simbols[i].c) {
             token->type = simbols[i].type;
-            return *token;
+            return;
         }
     }
-    return *token; 
-}
-
-Token qfinish(char symbol, Token *token) {
-    token->lexeme[--token->it] = '\0';
-    return *token;
+    return; 
 }

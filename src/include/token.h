@@ -48,7 +48,8 @@ typedef enum {
 typedef struct {
     TokenType type;
     char lexeme[64];
-    int it;
 } Token;
+
+#define MAX_VAR_SIZE 32
 
 #endif // TOKEN_H

@@ -4,34 +4,26 @@
 
 #include "lexical.h"
 #include "tabela.h"
+
 state_callback states[] = {
     q2_callback, q4_callback, q6_callback, q7_callback, q9_callback, q10_callback, 
     q11_callback, q13_callback, q14_callback, q16_callback, q17_callback, q18_callback
 };
 
-int isFinal(state_num Q) {
-    for (int i = 0; i < NUM_FINAL_STATES; i++) {
-        if (final_states[i] == Q) {
-            return i;
-        }
-    }
-    return -1;
-}
-
 //implementação
-Token get_token(FILE *input) {
+Token getToken(FILE *input) {
     state_num current_state = Q0;
     char c;
-    Token token = {TOKEN_UNDEFINED, "", 0};
+    Token token = {TOKEN_UNDEFINED, ""};
     
     do {
         /*
             Se o estado atual for um estado final, retornamos 
             o resultado para a main (analisador sintático)
         */
-        int final = isFinal(current_state);
-        if (final >= 0) {
-            return states[final](input, c, &token);
+       if (current_state >= 100) {
+            states[FINAL_INDEX(current_state)](input, c, &token);
+            return token;
         }
 
         // Lê um caracter
@@ -45,16 +37,16 @@ Token get_token(FILE *input) {
         if(current_state == Q15 && c != '}')
             continue; // Ignora caracteres dentro das chaves
 
-
         // Adiciona o caracter lido na string do token
         int len = strlen(token.lexeme);
-        token.lexeme[len] = c;
-        token.lexeme[len + 1] = '\0';
+        if (len <= MAX_VAR_SIZE){
+            token.lexeme[len] = c;
+            token.lexeme[len + 1] = '\0';
+        }
 
         // Faz a transição para o próximo estado de acordo com a tabela
-        int line = find_line(current_state);
         int column = find_column(c);
-        current_state = state_transitions[line][column];
+        current_state = state_transitions[current_state][column];
     } while (c != EOF);
 
    token.type = TOKEN_EOF;
