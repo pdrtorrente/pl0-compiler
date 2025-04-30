@@ -1,0 +1,9 @@
+VAR x, resultado;
+PROCEDURE quadrado;
+BEGIN
+  resultado := x * x
+END;
+BEGIN
+  x := 7;
+  CALL quadrado
+END.
