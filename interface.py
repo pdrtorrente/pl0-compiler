@@ -47,7 +47,16 @@ def executar_analisador():
     os.makedirs("output_files", exist_ok=True)
     nome_arquivo = os.path.basename(caminho_entrada)
     caminho_saida = os.path.join("output_files", nome_arquivo)
-    caminho_exe = os.path.join(".", "pl0.exe")
+    
+    sistema = platform.system()
+    if sistema == "Windows":
+        caminho_exe = os.path.join(".", "pl0.exe")
+    else:
+        caminho_exe = os.path.join(".", "pl0")  # Assume compilado como ./pl0 em Unix
+
+    if not os.path.exists(caminho_exe):
+        messagebox.showerror("Erro", f"Executável não encontrado: {caminho_exe}")
+        return
 
     try:
         subprocess.run([caminho_exe, caminho_entrada, caminho_saida], check=True)
