@@ -1,7 +1,12 @@
 #include <ctype.h>
-
 #include "tabela.h"
 
+/*
+    * Tabela de transições do autômato finito determinístico (AFD) para a análise léxica.
+    * A tabela é representada como uma matriz onde cada linha representa um estado intermediário 
+    * e cada coluna representa um símbolo do alfabeto. O valor na célula da matriz indica o 
+    * próximo estado para a combinação do estado atual e o símbolo lido. 
+*/
 state_num state_transitions[NUM_INTERMEDIATE_STATE][NUM_ALPHABET] = {
     //       Espaço|Letra|Dígito| '>'| '='| '<'| ':'| '{'| '}'|Símb|Simb_Inválido
     /* Q0 */  {Q0  , Q1  , Q3   , Q5 , Q18, Q8 , Q12, Q15, Q17, Q18, Q17}, // Estado inicial
@@ -13,6 +18,8 @@ state_num state_transitions[NUM_INTERMEDIATE_STATE][NUM_ALPHABET] = {
     /* Q15 */ {Q15 , Q15 , Q15  , Q15, Q15, Q15, Q15, Q15, Q16, Q15, Q15}, // {
 };
 
+
+// Função que retorna o índice da coluna correspondente ao símbolo lido.
 int find_column(char c) {
     if (isspace(c))
         return 0;
@@ -35,5 +42,5 @@ int find_column(char c) {
     else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')' || c == ';' || c == ',' || c == '.')
         return 9;
     else
-        return 10; // Caso não seja um símbolo do alfabeto
+        return 10; // caso não seja um símbolo do alfabeto de PL/0
 }

@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
-
 #include "state_callback.h"
 
 typedef void (*state_callback)(FILE *input, char symbol, Token *token);

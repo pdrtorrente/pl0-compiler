@@ -6,13 +6,13 @@
 #include "token.h"
 
 
-// Keywords
+// Palavras Reservadas (Keywords)
 typedef struct {
     const char* lexeme;
     TokenType type;
 } Keyword;
 
-// Reserved symbols
+// Símbolos Reservados
 typedef struct {
     const char c;
     TokenType type;
@@ -20,6 +20,7 @@ typedef struct {
 
 extern const char* token_names[];
 
+// Funções de retorno dos estados finais do autômato
 void q2_callback(FILE *input, char symbol, Token *token);
 void q4_callback(FILE *input, char symbol, Token *token);
 void q6_callback(FILE *input, char symbol, Token *token);

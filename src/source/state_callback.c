@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-
 #include "state_callback.h"
 
 // Lista de palavras reservadas
@@ -40,9 +39,14 @@ Symbol simbols[] = {
 const char* token_names[] = {
     "token_undefined",
     "token_comment",
-    "token_identifier",
     "token_number",
     "token_palavra_reservada",
+    "token_identifier",
+    "token_truncated_id",
+
+    // EOF e ERROR
+    "token_eof",
+    "token_error",
 
     // Palavras reservadas
     "token_begin",
@@ -56,8 +60,6 @@ const char* token_names[] = {
     "token_procedure",
     "token_call",
     "token_odd",
-    "token_eof",
-    "token_error",
 
     // Operadores e símbolos reservados
     "token_plus",
@@ -80,6 +82,11 @@ const char* token_names[] = {
     "token_assign"
 };
 
+
+/*
+    Função que faz o "retroceder" quando há a leitura de 
+    um símbolo de lookahead.
+*/
 void backtracking(FILE *input, char *str) {
     // Remove o último caracter da string do token
     int len = strlen(str);
@@ -91,7 +98,10 @@ void backtracking(FILE *input, char *str) {
     fseek(input, -1, SEEK_CUR);
 }
 
-// Compara duas strings ignorando maiúsculas e minúsculas
+/*
+    Função que compara duas strings ignorando o case.
+    Retorna 1 se forem iguais, 0 se forem diferentes.
+*/
 int strcmp_no_case(const char *s1, const char *s2) {
     while (*s1 && *s2) {
         if (tolower((unsigned char)*s1) != tolower((unsigned char)*s2)) {
@@ -119,9 +129,11 @@ void q2_callback(FILE *input, char symbol, Token *token) {
     // Se não for, é um identificador
     token->type = TOKEN_IDENTIFIER;
 
-    // Se variável muito longa
-    if(strlen(token->lexeme) >= MAX_VAR_SIZE) token->type = TOKEN_ERROR;
-
+    // Se variável muito longa, trunca o lexema
+    if(strlen(token->lexeme) >= MAX_VAR_SIZE) {
+        token->lexeme[MAX_VAR_SIZE] = '\0';
+        token->type = TOKEN_TRUNCATED_ID;
+    }    
     return;
 }
 

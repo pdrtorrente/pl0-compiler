@@ -1,16 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
 #include "lexical.h"
 #include "tabela.h"
 
+// Funções de callback para os estados finais
 state_callback states[] = {
     q2_callback, q4_callback, q6_callback, q7_callback, q9_callback, q10_callback, 
     q11_callback, q13_callback, q14_callback, q16_callback, q17_callback, q18_callback
 };
 
-//implementação
+// Implementação
 Token getToken(FILE *input) {
     state_num current_state = Q0;
     char c;

@@ -5,24 +5,28 @@ typedef enum {
     TOKEN_UNDEFINED,
 
     TOKEN_COMMENT,
-    TOKEN_IDENTIFIER,
     TOKEN_NUMBER,
     TOKEN_PALAVRA_RESERVADA,
-
-    // Tokens para palavras reservadas
-    TOKEN_BEGIN, 
-    TOKEN_END, 
-    TOKEN_IF, 
-    TOKEN_THEN, 
-    TOKEN_WHILE,
-    TOKEN_DO, 
-    TOKEN_CONST, 
-    TOKEN_VAR, 
-    TOKEN_PROCEDURE, 
-    TOKEN_CALL, 
-    TOKEN_ODD,
+    TOKEN_IDENTIFIER,
+    TOKEN_TRUNCATED_ID,
+    
+    // Tokens de fim de arquivo e de ERROR
     TOKEN_EOF,
     TOKEN_ERROR,
+
+    // Tokens para palavras reservadas
+    TOKEN_BEGIN,        // 'begin'
+    TOKEN_END,          // 'end'       
+    TOKEN_IF,           // 'if'
+    TOKEN_THEN,         // 'then'
+    TOKEN_WHILE,        // 'while'
+    TOKEN_DO,           // 'do' 
+    TOKEN_CONST,        // 'const'
+    TOKEN_VAR,          // 'var'            
+    TOKEN_PROCEDURE,    // 'procedure'
+    TOKEN_CALL,         // 'call'                                        
+    TOKEN_ODD,          // 'odd'
+
 
     // Tokens para operadores e símbolos reservados
     TOKEN_PLUS,         // '+'
@@ -45,11 +49,11 @@ typedef enum {
     TOKEN_ASSIGN        // ':='
 } TokenType;
 
+
 typedef struct {
-    TokenType type;
-    char lexeme[64];
+    TokenType type;     // Classificação do token 
+    char lexeme[64];    // Buffer para armazenar o lexema
 } Token;
 
-#define MAX_VAR_SIZE 32
-
+#define MAX_VAR_SIZE 16
 #endif // TOKEN_H

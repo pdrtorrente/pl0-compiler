@@ -1,12 +1,12 @@
 const max = 10;
-var x, sum;
+var variavelComNomeMuitoLongo, sum;
 
 begin
     sum := 0;
-    x := 1;
-    while x <= max do
+    variavelComNomeMuitoLongo := 1;
+    while variavelComNomeMuitoLongo <= max do
     begin
-        sum := sum + x;
-        x := x + 1
+        sum := sum + variavelComNomeMuitoLongo;
+        variavelComNomeMuitoLongo := variavelComNomeMuitoLongo + 1
     end
 end.

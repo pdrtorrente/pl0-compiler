@@ -3,6 +3,7 @@
 #include <string.h>
 #include "lexical.h"
 
+// Função para escrever os tokens no arquivo de saída
 void writeOutputFile(FILE *output_file, Token token) {
     fprintf(output_file, "%s, ", token.lexeme);
     fprintf(output_file, "%s\n", token_names[token.type]);
@@ -24,12 +25,14 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    // Abertura do arquivo de entrada para leitura
     FILE *input_file = fopen(input_path, "r");
     if (!input_file) {
         printf("Erro ao abrir o arquivo de entrada: %s\n", input_path);
         return EXIT_FAILURE;
     }
 
+    // Criação do arquivo de saída para escrita
     FILE *output_file = fopen(output_path, "w");
     if (!output_file) {
         printf("Erro ao criar o arquivo de saída: %s\n", output_path);
