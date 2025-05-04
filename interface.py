@@ -3,8 +3,7 @@ from tkinter import ttk, filedialog, messagebox
 import subprocess
 import os
 import platform
-from collections import deque
-
+import sys
 
 def escolher_arquivo():
     caminho = filedialog.askopenfilename(filetypes=[("Arquivos de texto", "*.txt")])
@@ -14,12 +13,11 @@ def escolher_arquivo():
         messagebox.showerror("Erro", "O arquivo deve ter extensão .txt")
 
 def abrir_diretorio_saida():
-    path = os.path.abspath("output_files")
-    sistema = platform.system()
+    path = os.path.abspath(resource_path("output_files"))
     try:
-        if sistema == "Windows":
+        if os.name == "nt":
             os.startfile(path)
-        elif sistema == "Darwin":
+        elif sys.platform == "darwin":
             subprocess.run(["open", path])
         else:
             subprocess.run(["xdg-open", path])
@@ -27,16 +25,21 @@ def abrir_diretorio_saida():
         messagebox.showwarning("Aviso", f"Erro ao abrir diretório: {e}")
 
 def abrir_arquivo_saida(caminho_saida):
-    sistema = platform.system()
     try:
-        if sistema == "Windows":
+        if os.name == "nt":
             os.startfile(caminho_saida)
-        elif sistema == "Darwin":
+        elif sys.platform == "darwin":
             subprocess.run(["open", caminho_saida])
         else:
             subprocess.run(["xdg-open", caminho_saida])
     except Exception as e:
         messagebox.showwarning("Aviso", f"Erro ao abrir o arquivo de saída:\n{e}")
+
+def resource_path(relative_path):
+    # Compatível com PyInstaller --onefile
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 def executar_analisador():
     caminho_entrada = entrada_var.get().strip()
@@ -44,15 +47,15 @@ def executar_analisador():
         messagebox.showerror("Erro", "Escolha um arquivo .txt válido.")
         return
 
-    os.makedirs("output_files", exist_ok=True)
+    os.makedirs(resource_path("output_files"), exist_ok=True)
     nome_arquivo = os.path.basename(caminho_entrada)
-    caminho_saida = os.path.join("output_files", nome_arquivo)
-    
+    caminho_saida = os.path.join(resource_path("output_files"), nome_arquivo)
+
     sistema = platform.system()
     if sistema == "Windows":
-        caminho_exe = os.path.join(".", "pl0.exe")
+        caminho_exe = resource_path("pl0.exe")
     else:
-        caminho_exe = os.path.join(".", "pl0")  # Assume compilado como ./pl0 em Unix
+        caminho_exe = resource_path("pl0")
 
     if not os.path.exists(caminho_exe):
         messagebox.showerror("Erro", f"Executável não encontrado: {caminho_exe}")
@@ -61,40 +64,35 @@ def executar_analisador():
     try:
         subprocess.run([caminho_exe, caminho_entrada, caminho_saida], check=True)
         messagebox.showinfo("Sucesso", f"Arquivo gerado em: {caminho_saida}")
-        abrir_arquivo_saida(caminho_saida)  # <- abertura automática aqui
+        abrir_arquivo_saida(caminho_saida)
     except subprocess.CalledProcessError:
         messagebox.showerror("Erro", "Erro ao executar o analisador.")
     except FileNotFoundError:
-        messagebox.showerror("Erro", "pl0.exe não encontrado.")
+        messagebox.showerror("Erro", "Executável não encontrado.")
 
-# Janela principal
+# Interface gráfica
 root = tk.Tk()
 root.title("Analisador Léxico PL/0")
 root.geometry("750x500")
 
-# Widgets modernos com ttk
 style = ttk.Style()
 style.theme_use("clam")
 
 frame = ttk.Frame(root, padding="15")
 frame.pack(fill=tk.BOTH, expand=True)
 
-# Instruções
 ttk.Label(frame, text="Analisador Léxico para a linguagem PL/0", font=("Segoe UI", 14, "bold")).grid(column=0, row=0, columnspan=3, pady=(0, 10))
 ttk.Label(frame, text="Selecione o arquivo .txt contendo o código-fonte em PL/0. A saída será gerada na pasta output_files.").grid(column=0, row=1, columnspan=3, sticky="w")
 
-# Seleção de arquivo
 ttk.Label(frame, text="Caminho do arquivo de entrada:").grid(column=0, row=2, sticky="w", pady=10)
 entrada_var = tk.StringVar()
 entrada_entry = ttk.Entry(frame, textvariable=entrada_var, width=60)
 entrada_entry.grid(column=0, row=3, padx=(0, 10), sticky="w")
 ttk.Button(frame, text="Escolher...", command=escolher_arquivo).grid(column=1, row=3)
 
-# Botões de ação
 ttk.Button(frame, text="Executar Analisador", command=executar_analisador).grid(column=0, row=4, pady=20, sticky="w")
 ttk.Button(frame, text="Abrir pasta de saída", command=abrir_diretorio_saida).grid(column=1, row=4, pady=20, sticky="w")
 
-# Rodapé
 ttk.Label(frame, text="Desenvolvido por:"
                         "\n   - Agnes Bressan de Almeida"
                         "\n   - Carolina Almeida Américo"
