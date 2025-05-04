@@ -4,6 +4,7 @@ import subprocess
 import os
 import platform
 import sys
+import shutil
 
 def escolher_arquivo():
     caminho = filedialog.askopenfilename(filetypes=[("Arquivos de texto", "*.txt")])
@@ -63,8 +64,17 @@ def executar_analisador():
 
     try:
         subprocess.run([caminho_exe, caminho_entrada, caminho_saida], check=True)
-        messagebox.showinfo("Sucesso", f"Arquivo gerado em: {caminho_saida}")
-        abrir_arquivo_saida(caminho_saida)
+
+        # Criar o caminho com sufixo "_compilado"
+        diretorio_entrada = os.path.dirname(caminho_entrada)
+        nome_base, extensao = os.path.splitext(nome_arquivo)
+        nome_compilado = f"{nome_base}_compilado{extensao}"
+        caminho_saida_copia = os.path.join(diretorio_entrada, nome_compilado)
+
+        shutil.copy(caminho_saida, caminho_saida_copia)
+
+        messagebox.showinfo("Sucesso", f"Arquivo gerado em: {caminho_saida_copia}")
+        abrir_arquivo_saida(caminho_saida_copia)
     except subprocess.CalledProcessError:
         messagebox.showerror("Erro", "Erro ao executar o analisador.")
     except FileNotFoundError:
@@ -82,7 +92,7 @@ frame = ttk.Frame(root, padding="15")
 frame.pack(fill=tk.BOTH, expand=True)
 
 ttk.Label(frame, text="Analisador Léxico para a linguagem PL/0", font=("Segoe UI", 14, "bold")).grid(column=0, row=0, columnspan=3, pady=(0, 10))
-ttk.Label(frame, text="Selecione o arquivo .txt contendo o código-fonte em PL/0. A saída será gerada na pasta output_files.").grid(column=0, row=1, columnspan=3, sticky="w")
+ttk.Label(frame, text="Selecione o arquivo .txt contendo o código-fonte em PL/0. A saída será gerada no mesmo diretório do arquivo de entrada.").grid(column=0, row=1, columnspan=3, sticky="w")
 
 ttk.Label(frame, text="Caminho do arquivo de entrada:").grid(column=0, row=2, sticky="w", pady=10)
 entrada_var = tk.StringVar()
