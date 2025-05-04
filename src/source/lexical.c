@@ -21,7 +21,7 @@ Token getToken(FILE *input) {
             Se o estado atual for um estado final, retornamos 
             o resultado para a main (analisador sintático)
         */
-       if (current_state >= 100) {
+       if (current_state >= NUM_INTERMEDIATE_STATE) {
             states[FINAL_INDEX(current_state)](input, c, &token);
             return token;
         }
