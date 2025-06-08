@@ -47,6 +47,7 @@ const char* token_names[] = {
     // EOF e ERROR
     "token_eof",
     "token_error",
+    "token_comment_error",
 
     // Palavras reservadas
     "token_begin",

@@ -33,9 +33,15 @@ Token getToken(FILE *input) {
         if(current_state == Q0 && isspace(c))
             continue; // Ignora espaços em branco
 
+        // Identifica erro na formação de comentários
+        if(current_state == Q15 && c == '\n' ) {
+            token.type = TOKEN_COMMENT_ERROR;
+            return token;
+        }
+        
         // Ignora comentários
         if(current_state == Q15 && c != '}')
-            continue; // Ignora caracteres dentro das chaves
+            continue; // Ignora caracteres dentro das chaves 
 
         // Adiciona o caracter lido na string do token
         int len = strlen(token.lexeme);

@@ -13,6 +13,7 @@ typedef enum {
     // Tokens de fim de arquivo e de ERROR
     TOKEN_EOF,
     TOKEN_ERROR,
+    TOKEN_COMMENT_ERROR,
 
     // Tokens para palavras reservadas
     TOKEN_BEGIN,        // 'begin'
