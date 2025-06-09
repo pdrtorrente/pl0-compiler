@@ -54,6 +54,8 @@ typedef enum {
 typedef struct {
     TokenType type;     // Classificação do token 
     char lexeme[64];    // Buffer para armazenar o lexema
+    int line;
+    int caracter;
 } Token;
 
 #define MAX_VAR_SIZE 16

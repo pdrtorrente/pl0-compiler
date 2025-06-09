@@ -10,11 +10,14 @@ state_callback states[] = {
     q11_callback, q13_callback, q14_callback, q16_callback, q17_callback, q18_callback
 };
 
+int line_count = 1;
+int caracter_count = 1;
+
 // Implementação
 Token getToken(FILE *input) {
     state_num current_state = Q0;
     char c;
-    Token token = {TOKEN_UNDEFINED, ""};
+    Token token = {TOKEN_UNDEFINED, "", 0, caracter_count};
     
     do {
         /*
@@ -22,12 +25,24 @@ Token getToken(FILE *input) {
             o resultado para a main (analisador sintático)
         */
        if (current_state >= NUM_INTERMEDIATE_STATE) {
+            long pos_antes = ftell(input); 
             states[FINAL_INDEX(current_state)](input, c, &token);
+            long pos_depois = ftell(input);
+
+            caracter_count += pos_depois - pos_antes;
             return token;
         }
 
         // Lê um caracter
         c = fgetc(input);
+
+        token.caracter = caracter_count - strlen(token.lexeme);
+        token.line = line_count;
+        caracter_count++;
+        if (c == '\n') {
+            line_count++;
+            caracter_count = 1;
+        }
 
         // Ignora espaços quando estamos no estado inicial
         if(current_state == Q0 && isspace(c))
@@ -38,7 +53,7 @@ Token getToken(FILE *input) {
             token.type = TOKEN_COMMENT_ERROR;
             return token;
         }
-        
+
         // Ignora comentários
         if(current_state == Q15 && c != '}')
             continue; // Ignora caracteres dentro das chaves 
@@ -55,6 +70,9 @@ Token getToken(FILE *input) {
         current_state = state_transitions[current_state][column];
     } while (c != EOF);
 
-   token.type = TOKEN_EOF;
-   return token;
+
+    token.caracter = caracter_count;
+    token.line = line_count;
+    token.type = TOKEN_EOF;
+    return token;
 }

@@ -89,14 +89,16 @@ const char* token_names[] = {
     um símbolo de lookahead.
 */
 void backtracking(FILE *input, char *str) {
-    // Remove o último caracter da string do token
+    // Volta em 1 posição o ponteiro do arquivo de entrada
     int len = strlen(str);
+    if(str[len-1] != '\n') {
+        fseek(input, -1, SEEK_CUR);
+    }
+
+    // Remove o último caracter da string do token
     if (len > 0) {
         str[len - 1] = '\0';
     }
-
-    // Volta em 1 posição o ponteiro do arquivo de entrada
-    fseek(input, -1, SEEK_CUR);
 }
 
 /*

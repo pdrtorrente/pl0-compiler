@@ -1,178 +1,289 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "lexical.h"
+#include "parser.h"
 
 Token token_atual;
 FILE *fonte;
 
-void erro(const char *mensagem) {
-    fprintf(stderr, "Erro sintatico: %s (token: %s)\n", mensagem, token_atual.lexeme);
-    exit(EXIT_FAILURE);
-}
-
-void obter_simbolo() {
-    token_atual = getToken(fonte);
-}
-
-void consome(TokenType tipo) {
-    if (token_atual.type == tipo) {
-        obter_simbolo();
+void erro(const char *mensagem, Token *token) {
+    if(token->type == TOKEN_ERROR) {
+        fprintf(stderr, "Erro lexico na linha %d caracter %d: caracter '%s' nao reconhecido\n", token->line, token->caracter, token->lexeme);
+        exit(EXIT_FAILURE);
+    } 
+    else if(token->type == TOKEN_COMMENT_ERROR) {
+        fprintf(stderr, "Erro lexico na linha %d caracter %d: comentario mal formado.\n", token->line, token->caracter);
+        exit(EXIT_FAILURE);
+    }   
+    else if(token->type == TOKEN_EOF) {
+        fprintf(stderr, "Erro na linha %d caracter %d: EOF inesperado\n", token->line, token->caracter);
+        exit(EXIT_FAILURE);
     } else {
-        erro("Token inesperado");
+        fprintf(stderr, "Erro sintatico na linha %d caracter %d: %s (token: %s)\n", token->line, token->caracter, mensagem, token->lexeme);
+        exit(EXIT_FAILURE);
     }
 }
 
-void constante();
-void variavel();
-void procedimento();
-void comando();
-void mais_cmd();
-void expressao();
-void termo();
-void mais_termos();
-void fator();
-void mais_fatores();
-void condicao();
+// void consome(FILE *input, TokenType tipo, Token *token) {
+//     if(token->type == tipo) {
+//         *token = getToken(input);
+//     } else {
+//         erro("Token inesperado");
+//     }
+// }
 
-void programa() {
-    constante();
-    variavel();
-    procedimento();
-    comando();
-    if (token_atual.type == TOKEN_PERIOD) obter_simbolo();
-    else erro("Esperado '.'");
+void ASD_preditiva(FILE *input, Token *token) {
+    *token = getToken(input);
+    programa(input, token);
+
+    if(token->type == TOKEN_EOF) 
+        printf("Programa Compilado com SUCESSO!!!");
+    else 
+        erro("Esperado EOF", token);
 }
 
-void constante() {
-    if (token_atual.type == TOKEN_CONST) {
-        obter_simbolo();
-        if (token_atual.type == TOKEN_IDENTIFIER) obter_simbolo(); else erro("Esperado identificador");
-        if (token_atual.type == TOKEN_EQUAL) obter_simbolo(); else erro("Esperado '='");
-        if (token_atual.type == TOKEN_NUMBER) obter_simbolo(); else erro("Esperado numero");
-        while (token_atual.type == TOKEN_COMMA) {
-            obter_simbolo();
-            if (token_atual.type == TOKEN_IDENTIFIER) obter_simbolo(); else erro("Esperado identificador");
-            if (token_atual.type == TOKEN_EQUAL) obter_simbolo(); else erro("Esperado '='");
-            if (token_atual.type == TOKEN_NUMBER) obter_simbolo(); else erro("Esperado numero");
+void programa(FILE *input, Token *token) {
+    constante(input, token);
+    variavel(input, token);
+    procedimento(input, token);
+    comando(input, token);
+
+    if(token->type == TOKEN_PERIOD) 
+        *token = getToken(input);
+    else 
+        erro("Esperado '.'", token);
+}
+
+void constante(FILE *input, Token *token) {
+    if(token->type == TOKEN_CONST) {
+        *token = getToken(input);
+
+        if(token->type == TOKEN_IDENTIFIER) 
+            *token = getToken(input);
+        else 
+            erro("Esperado identificador", token);
+        
+        if(token->type == TOKEN_EQUAL) 
+            *token = getToken(input);
+        else 
+            erro("Esperado '='", token);
+        
+        if(token->type == TOKEN_NUMBER) 
+            *token = getToken(input); 
+        else 
+            erro("Esperado numero", token);
+
+        mais_const(input, token);
+
+        if(token->type == TOKEN_SEMICOLON) 
+            *token = getToken(input);
+        else 
+            erro("Esperado ';'", token);
+    }
+}
+
+void mais_const(FILE *input, Token *token) {
+    if(token->type == TOKEN_COMMA) {
+        *token = getToken(input);
+        
+        if(token->type == TOKEN_IDENTIFIER) 
+            *token = getToken(input);
+        else 
+            erro("Esperado identificador", token);
+        if(token->type == TOKEN_EQUAL) 
+            *token = getToken(input); 
+        else 
+            erro("Esperado '='", token);
+        if(token->type == TOKEN_NUMBER)
+            *token = getToken(input);
+        else
+            erro("Esperado numero", token);
+
+        mais_const(input, token);
+    }
+}
+
+void variavel(FILE *input, Token *token) {
+    if(token->type == TOKEN_VAR) {
+        *token = getToken(input);
+        if(token->type == TOKEN_IDENTIFIER) 
+            *token = getToken(input);
+        else
+            erro("Esperado identificador", token);
+        
+        while (token->type == TOKEN_COMMA) {
+            *token = getToken(input);
+            if(token->type == TOKEN_IDENTIFIER) 
+                *token = getToken(input); 
+            else 
+                erro("Esperado identificador", token);
         }
-        if (token_atual.type == TOKEN_SEMICOLON) obter_simbolo(); else erro("Esperado ';'");
+        if(token->type == TOKEN_SEMICOLON) 
+            *token = getToken(input); 
+        else 
+            erro("Esperado ';'", token);
     }
 }
 
-void variavel() {
-    if (token_atual.type == TOKEN_VAR) {
-        obter_simbolo();
-        if (token_atual.type == TOKEN_IDENTIFIER) obter_simbolo(); else erro("Esperado identificador");
-        while (token_atual.type == TOKEN_COMMA) {
-            obter_simbolo();
-            if (token_atual.type == TOKEN_IDENTIFIER) obter_simbolo(); else erro("Esperado identificador");
-        }
-        if (token_atual.type == TOKEN_SEMICOLON) obter_simbolo(); else erro("Esperado ';'");
+void mais_var(FILE *input, Token *token) {
+    if (token->type == TOKEN_COMMA) {
+        *token = getToken(input);
+        if(token->type == TOKEN_IDENTIFIER) 
+            *token = getToken(input); 
+        else 
+            erro("Esperado identificador", token);
+        mais_var(input, token);
     }
 }
 
-void procedimento() {
-    while (token_atual.type == TOKEN_PROCEDURE) {
-        obter_simbolo();
-        if (token_atual.type == TOKEN_IDENTIFIER) obter_simbolo(); else erro("Esperado identificador");
-        if (token_atual.type == TOKEN_SEMICOLON) obter_simbolo(); else erro("Esperado ';'");
-        constante();
-        variavel();
-        procedimento();
-        comando();
-        if (token_atual.type == TOKEN_SEMICOLON) obter_simbolo(); else erro("Esperado ';'");
+void procedimento(FILE *input, Token *token) {
+    if (token->type == TOKEN_PROCEDURE) {
+        *token = getToken(input);
+        if(token->type == TOKEN_IDENTIFIER) 
+            *token = getToken(input);
+        else 
+            erro("Esperado identificador", token);
+
+        if(token->type == TOKEN_SEMICOLON) 
+            *token = getToken(input); 
+        else 
+            erro("Esperado ';'", token);
+
+        constante(input, token);
+        variavel(input, token);
+        procedimento(input, token);
+        comando(input, token);
+
+        if(token->type == TOKEN_SEMICOLON) 
+            *token = getToken(input); 
+        else 
+            erro("Esperado ';'", token);
+
+        procedimento(input, token);
     }
 }
 
-void comando() {
-    if (token_atual.type == TOKEN_IDENTIFIER) {
-        obter_simbolo();
-        if (token_atual.type == TOKEN_ASSIGN) obter_simbolo(); else erro("Esperado ':='");
-        expressao();
-    } else if (token_atual.type == TOKEN_CALL) {
-        obter_simbolo();
-        if (token_atual.type == TOKEN_IDENTIFIER) obter_simbolo(); else erro("Esperado identificador");
-    } else if (token_atual.type == TOKEN_BEGIN) {
-        obter_simbolo();
-        comando();
-        mais_cmd();
-        if (token_atual.type == TOKEN_END) obter_simbolo(); else erro("Esperado 'end'");
-    } else if (token_atual.type == TOKEN_IF) {
-        obter_simbolo();
-        condicao();
-        if (token_atual.type == TOKEN_THEN) obter_simbolo(); else erro("Esperado 'then'");
-        comando();
-    } else if (token_atual.type == TOKEN_WHILE) {
-        obter_simbolo();
-        condicao();
-        if (token_atual.type == TOKEN_DO) obter_simbolo(); else erro("Esperado 'do'");
-        comando();
+void comando(FILE *input, Token *token) {
+    if(token->type == TOKEN_IDENTIFIER) {
+        *token = getToken(input);
+
+        if(token->type == TOKEN_ASSIGN)
+            *token = getToken(input);
+        else
+            erro("Esperado ':='", token);
+
+        expressao(input, token);
+    } else if(token->type == TOKEN_CALL) {
+        *token = getToken(input);
+
+        if(token->type == TOKEN_IDENTIFIER) 
+            *token = getToken(input); 
+        else 
+            erro("Esperado identificador", token);
+    } else if(token->type == TOKEN_BEGIN) {
+        *token = getToken(input);
+        comando(input, token);
+        mais_cmd(input, token);
+
+        if(token->type == TOKEN_END) 
+            *token = getToken(input);
+        else 
+            erro("Esperado 'end'", token);
+        
+    } else if(token->type == TOKEN_IF) {
+        *token = getToken(input);
+        condicao(input, token);
+
+        if(token->type == TOKEN_THEN)
+            *token = getToken(input);
+        else 
+            erro("Esperado 'then'", token);
+
+        comando(input, token);
+    } else if(token->type == TOKEN_WHILE) {
+        *token = getToken(input);
+        condicao(input, token);
+
+        if(token->type == TOKEN_DO)
+            *token = getToken(input); 
+        else erro("Esperado 'do'", token);
+
+        comando(input, token);
     }
 }
 
-void mais_cmd() {
-    while (token_atual.type == TOKEN_SEMICOLON) {
-        obter_simbolo();
-        comando();
+void mais_cmd(FILE *input, Token *token) {
+    if(token->type == TOKEN_SEMICOLON) {
+        *token = getToken(input);
+        comando(input, token);
+        mais_cmd(input, token);
     }
 }
 
-void expressao() {
-    if (token_atual.type == TOKEN_PLUS || token_atual.type == TOKEN_MINUS) obter_simbolo();
-    termo();
-    mais_termos();
+void expressao(FILE *input, Token *token) {
+    if(token->type == TOKEN_PLUS || token->type == TOKEN_MINUS) 
+        *token = getToken(input);
+    
+    termo(input, token);
+    mais_termos(input, token);
 }
 
-void termo() {
-    fator();
-    mais_fatores();
+void termo(FILE *input, Token *token) {
+    fator(input, token);
+    mais_fatores(input, token);
 }
 
-void mais_termos() {
-    while (token_atual.type == TOKEN_PLUS || token_atual.type == TOKEN_MINUS) {
-        obter_simbolo();
-        termo();
+void mais_termos(FILE *input, Token *token) {
+    if(token->type == TOKEN_PLUS || token->type == TOKEN_MINUS) {
+        *token = getToken(input);
+        termo(input, token);
+        mais_termos(input, token);
     }
 }
 
-void fator() {
-    if (token_atual.type == TOKEN_IDENTIFIER || token_atual.type == TOKEN_NUMBER) {
-        obter_simbolo();
-    } else if (token_atual.type == TOKEN_LPAREN) {
-        obter_simbolo();
-        expressao();
-        if (token_atual.type == TOKEN_RPAREN) obter_simbolo(); else erro("Esperado ')'");
+void fator(FILE *input, Token *token) {
+    if(token->type == TOKEN_IDENTIFIER || token->type == TOKEN_NUMBER) {
+        *token = getToken(input);
+    } else if(token->type == TOKEN_LPAREN) {
+        *token = getToken(input);
+        expressao(input, token);
+
+        if(token->type == TOKEN_RPAREN) 
+            *token = getToken(input); 
+        else 
+            erro("Esperado ')'", token);
+    
     } else {
-        erro("Esperado fator válido");
+        erro("Esperado fator válido", token);
     }
 }
 
-void mais_fatores() {
-    while (token_atual.type == TOKEN_MULTIPLY || token_atual.type == TOKEN_DIVIDE) {
-        obter_simbolo();
-        fator();
+void mais_fatores(FILE *input, Token *token) {
+    if(token->type == TOKEN_MULTIPLY || token->type == TOKEN_DIVIDE) {
+        *token = getToken(input);
+        fator(input, token);
+        mais_fatores(input, token);
     }
 }
 
-void condicao() {
-    if (token_atual.type == TOKEN_ODD) {
-        obter_simbolo();
-        expressao();
+void condicao(FILE *input, Token *token) {
+    if(token->type == TOKEN_ODD) {
+        *token = getToken(input);
+        expressao(input, token);
     } else {
-        expressao();
-        switch (token_atual.type) {
+        expressao(input, token);
+        switch (token->type) {
             case TOKEN_EQUAL:
             case TOKEN_DIFFERENT:
             case TOKEN_LESS:
             case TOKEN_LESS_EQ:
             case TOKEN_GREATER:
             case TOKEN_GREATER_EQ:
-                obter_simbolo();
+                *token = getToken(input);
                 break;
             default:
-                erro("Esperado operador relacional");
+                erro("Esperado operador relacional", token);
         }
-        expressao();
+        expressao(input, token);
     }
 }

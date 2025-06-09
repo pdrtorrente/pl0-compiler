@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lexical.h"
+#include "parser.h"
 
 // Função para escrever os tokens no arquivo de saída
 void writeOutputFile(FILE *output_file, Token token) {
@@ -40,15 +40,19 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+
+
     Token token;
-    while(1) {
-        token = getToken(input_file);
-        if (token.type == TOKEN_EOF) {
-            break; // Finaliza o loop se o token for EOF
-        } else if (token.type != TOKEN_COMMENT) {
-            writeOutputFile(output_file, token);
-        }
-    }
+    ASD_preditiva(input_file, &token);
+    // while(1) {
+    //     token = getToken(input_file);
+    //     printf("Lexema: %s\n Line %d\n Caracter %d\n", token.lexeme, token.line, token.caracter);
+    //     if (token.type == TOKEN_EOF) {
+    //         break; // Finaliza o loop se o token for EOF
+    //     } else if (token.type != TOKEN_COMMENT) {
+    //         writeOutputFile(output_file, token);
+    //     }
+    // }
 
     fclose(input_file);
     fclose(output_file);
