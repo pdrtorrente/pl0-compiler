@@ -6,6 +6,8 @@
 
 Token token_atual;
 FILE *fonte;
+int success = 1;
+
 
 bool pertence(TokenType token, ConjuntoSimbolos conjunto);
 ConjuntoSimbolos uniao(ConjuntoSimbolos a, ConjuntoSimbolos b);
@@ -38,6 +40,9 @@ ConjuntoSimbolos conjunto(int n, TokenType lista[]) {
 }
 
 void erro(const char *mensagem, Token *token, FILE *input, ConjuntoSimbolos conjunto_sincronizacao) {
+    // Atualiza que o programa não foi compilado com sucesso
+    success = 0;
+
     // Erros léxicos são fatais e encerram a compilação
     if (token->type == TOKEN_ERROR || token->type == TOKEN_COMMENT_ERROR) {
         fprintf(stderr, "Erro lexico na linha %d caracter %d: %s ('%s')\n", token->line, token->caracter, mensagem, token->lexeme);
@@ -50,80 +55,22 @@ void erro(const char *mensagem, Token *token, FILE *input, ConjuntoSimbolos conj
     } 
     // Para erros sintáticos, ativa o modo pânico
     else {
-        printf("Erro sintático (%s) na linha %d caracter %d - token inesperado '%s'\n", mensagem, token->line, token->caracter, token->lexeme);
+        printf("Erro sintático (%s) na linha %d caracter %d\n", mensagem, token->line, token->caracter);
         while (!pertence(token->type, conjunto_sincronizacao) && token_atual.type != TOKEN_EOF) {
             *token = getToken(input);
         }
     }
 }
 
-
-// void sincroniza(FILE *input, Token *token, int n, va_list args) {
-//     bool token_encontrado = false;
-
-//     // Continua consumindo tokens enquanto não encontrar um de sincronização ou o fim do arquivo
-//     while (token->type != TOKEN_EOF && !token_encontrado) {
-//         // Reinicia a lista de argumentos para percorrer novamente
-//         va_list args_copy;
-//         va_copy(args_copy, args);
-
-//         // Verifica se o token atual está no conjunto de sincronização
-//         for (int i = 0; i < n; i++) {
-//             if (token->type == va_arg(args_copy, TokenType)) {
-//                 token_encontrado = true;
-//                 break;
-//             }
-//         }
-//         va_end(args_copy);
-
-//         // Se encontrou um token de sincronização, sai do laço
-//         if (token_encontrado) {
-//             break;
-//         }
-
-//         // Caso contrário, obtém o próximo token
-//         *token = getToken(input);
-//     }
-// }
-
-// void erro(const char *mensagem, Token *token, FILE *input, int n, ...) {
-//     // Erros léxicos são fatais e encerram a compilação
-//     if (token->type == TOKEN_ERROR || token->type == TOKEN_COMMENT_ERROR) {
-//         fprintf(stderr, "Erro lexico na linha %d caracter %d: %s ('%s')\n", token->line, token->caracter, mensagem, token->lexeme);
-//         exit(EXIT_FAILURE);
-//     } 
-//     // Fim de arquivo inesperado também é fatal
-//     else if (token->type == TOKEN_EOF) {
-//         fprintf(stderr, "Erro sintatico na linha %d caracter %d: Fim de arquivo inesperado. %s\n", token->line, token->caracter, mensagem);
-//         exit(EXIT_FAILURE);
-//     } 
-//     // Para erros sintáticos, ativa o modo pânico
-//     else {
-//         fprintf(stderr, "Erro sintatico na linha %d caracter %d: %s (token encontrado: '%s')\n", token->line, token->caracter, mensagem, token->lexeme);
-        
-//         // Inicia a lista de argumentos variáveis para passar para a sincronização
-//         va_list args;
-//         va_start(args, n);
-//         sincroniza(input, token, n, args);
-//         va_end(args);
-//     }
-// }
-
-// void consome(FILE *input, TokenType tipo, Token *token) {
-//     if(token->type == tipo) {
-//         *token = getToken(input);
-//     } else {
-//         erro("Token inesperado");
-//     }
-// }
-
 void ASD_preditiva(FILE *input, Token *token) {
     *token = getToken(input);
     TokenType sync[] = { TOKEN_EOF };
     programa(input, token, conjunto(1, sync));
 
-    if(token->type == TOKEN_EOF) 
-        printf("Programa Compilado com SUCESSO!!!");
+    if(token->type == TOKEN_EOF) {
+        if(success == 1)
+            printf("Programa Compilado com SUCESSO!!!");
+    }
     else {
         TokenType sync[] = { TOKEN_EOF };
         erro("Esperado EOF", token, input, conjunto(1, sync));
@@ -131,10 +78,17 @@ void ASD_preditiva(FILE *input, Token *token) {
 }
 
 void programa(FILE *input, Token *token, ConjuntoSimbolos S) {
-    constante(input, token, S);
-    variavel(input, token, S);
-    procedimento(input, token, S);
-    comando(input, token, S);
+    TokenType syncConst[] = { TOKEN_VAR, TOKEN_PROCEDURE, TOKEN_IDENTIFIER, TOKEN_CALL, TOKEN_BEGIN, TOKEN_IF, TOKEN_PERIOD, TOKEN_SEMICOLON };
+    constante(input, token, uniao(conjunto(8, syncConst), S));
+
+    TokenType syncVar[] = { TOKEN_PROCEDURE, TOKEN_IDENTIFIER, TOKEN_CALL, TOKEN_BEGIN, TOKEN_IF, TOKEN_PERIOD, TOKEN_SEMICOLON };
+    variavel(input, token, uniao(conjunto(7, syncVar), S));
+
+    TokenType syncProc[] = { TOKEN_IDENTIFIER, TOKEN_CALL, TOKEN_BEGIN, TOKEN_IF, TOKEN_PERIOD, TOKEN_SEMICOLON };
+    procedimento(input, token, uniao(conjunto(6, syncProc), S));
+
+    TokenType syncComand[] = { TOKEN_PERIOD, TOKEN_SEMICOLON };
+    comando(input, token, uniao(conjunto(2, syncComand), S));
 
     if(token->type == TOKEN_PERIOD) {
         *token = getToken(input);
@@ -153,7 +107,7 @@ void constante(FILE *input, Token *token, ConjuntoSimbolos S) {
             TokenType sync[] = { TOKEN_EQUAL, TOKEN_NUMBER, TOKEN_SEMICOLON };
             erro("Esperado identificador", token, input, uniao(conjunto(3, sync), S));
             if (pertence(token->type, S)) return;
-            *token = getToken(input);
+            // *token = getToken(input);
         }
         
         if(token->type == TOKEN_EQUAL){
@@ -162,7 +116,7 @@ void constante(FILE *input, Token *token, ConjuntoSimbolos S) {
             TokenType sync[] = { TOKEN_NUMBER, TOKEN_COMMA };
             erro("Esperado '='", token, input, uniao(conjunto(2, sync), S));
             if (pertence(token->type, S)) return;
-            *token = getToken(input);
+            // *token = getToken(input);
         }
         
         if(token->type == TOKEN_NUMBER) {
@@ -171,7 +125,7 @@ void constante(FILE *input, Token *token, ConjuntoSimbolos S) {
             TokenType sync[] = { TOKEN_COMMA, TOKEN_SEMICOLON };
             erro("Esperado numero", token, input, uniao(conjunto(2, sync), S));
             if (pertence(token->type, S)) return;
-            *token = getToken(input);
+            // *token = getToken(input);
         }
 
         TokenType sync1[] = { TOKEN_SEMICOLON };
