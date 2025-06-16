@@ -372,7 +372,7 @@ void fator(FILE *input, Token *token, ConjuntoSimbolos S) {
         }
     } else {
         TokenType sync[] = { TOKEN_IDENTIFIER, TOKEN_NUMBER, TOKEN_LPAREN };
-        erro("Esperado fator válido", token, input, uniao(conjunto(3, sync), S));
+        erro("Esperado fator valido", token, input, uniao(conjunto(3, sync), S));
         if (pertence(token->type, S)) return;
     }
 }
