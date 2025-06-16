@@ -8,18 +8,13 @@ def selecionar_arquivo():
     if caminho:
         entrada_var.set(caminho)
 
-def selecionar_executavel():
-    caminho = filedialog.askopenfilename(filetypes=[("Executáveis", "*.exe" if os.name == 'nt' else "*")])
-    if caminho:
-        exe_var.set(caminho)
-
 def executar_analisador():
     caminho_entrada = entrada_var.get()
     caminho_saida = saida_var.get()
-    caminho_exe = exe_var.get()
+    caminho_exe = ".\\pl0.exe" if os.name == 'nt' else "./pl0"
 
-    if not caminho_entrada or not caminho_exe:
-        messagebox.showwarning("Aviso", "Selecione o arquivo de entrada e o executável.")
+    if not caminho_entrada:
+        messagebox.showwarning("Aviso", "Selecione o arquivo de entrada.")
         return
 
     try:
@@ -28,21 +23,19 @@ def executar_analisador():
 
         saida_texto.delete("1.0", tk.END)
 
-        if resultado.returncode == 0:
-            saida_texto.insert(tk.END, "Compilado com sucesso.\n")
-        else:
-            mensagem = resultado.stderr.strip() or resultado.stdout.strip()
-            saida_texto.insert(tk.END, f"Erros encontrados:\n{mensagem}\n")
+        if resultado.stdout:
+            saida_texto.insert(tk.END, resultado.stdout)
+        if resultado.stderr:
+            saida_texto.insert(tk.END, resultado.stderr)
 
     except FileNotFoundError:
-        messagebox.showerror("Erro", "Executável não encontrado.")
+        messagebox.showerror("Erro", f"Executável '{caminho_exe}' não encontrado.")
 
 janela = tk.Tk()
 janela.title("Analisador PL/0")
 
 entrada_var = tk.StringVar()
 saida_var = tk.StringVar(value="saida.txt")
-exe_var = tk.StringVar()
 
 # Interface
 frame = tk.Frame(janela, padx=10, pady=10)
@@ -54,10 +47,6 @@ tk.Button(frame, text="Selecionar", command=selecionar_arquivo).grid(row=0, colu
 
 tk.Label(frame, text="Arquivo de saída:").grid(row=1, column=0, sticky="w")
 tk.Entry(frame, textvariable=saida_var, width=40).grid(row=1, column=1)
-
-tk.Label(frame, text="Executável:").grid(row=2, column=0, sticky="w")
-tk.Entry(frame, textvariable=exe_var, width=40).grid(row=2, column=1)
-tk.Button(frame, text="Selecionar", command=selecionar_executavel).grid(row=2, column=2)
 
 tk.Button(janela, text="Executar Analisador", command=executar_analisador, bg="green", fg="white").pack(pady=10)
 

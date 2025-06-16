@@ -5,6 +5,8 @@
 #include "parser.h"
 
 FILE *fonte;
+
+// Variável global que é atualizada caso um erro seja encontrado
 int success = 1;
 
 
@@ -54,7 +56,7 @@ void erro(const char *mensagem, Token *token, FILE *input, ConjuntoSimbolos conj
     } 
     // Para erros sintáticos, ativa o modo pânico
     else {
-        printf("Erro sintático (%s) na linha %d caracter %d\n", mensagem, token->line, token->caracter);
+        printf("Erro sintatico (%s) na linha %d caracter %d\n", mensagem, token->line, token->caracter);
         while (!pertence(token->type, conjunto_sincronizacao) && token->type != TOKEN_EOF) {
             *token = getToken(input);
         }  
@@ -67,6 +69,7 @@ void ASD_preditiva(FILE *input, Token *token) {
     programa(input, token, conjunto(1, sync));
 
     if(token->type == TOKEN_EOF) {
+        // Se não houve erro:
         if(success == 1)
             printf("Programa Compilado com SUCESSO!!!");
     }
@@ -399,10 +402,11 @@ void condicao(FILE *input, Token *token, ConjuntoSimbolos S) {
             case TOKEN_GREATER_EQ:
                 *token = getToken(input);
                 break;
-            default:
+            default: {
                 TokenType sync[] = { TOKEN_PLUS, TOKEN_MINUS, TOKEN_IDENTIFIER, TOKEN_NUMBER, TOKEN_LPAREN };
                 erro("Esperado operador relacional", token, input, uniao(conjunto(5, sync), S));
                 if (pertence(token->type, S)) return;
+            }
         }
         expressao(input, token, S);
     }
