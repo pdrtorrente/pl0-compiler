@@ -1,10 +1,59 @@
-VAR x, y;
-BEGIN
-  x := 10;
-  y := 0;
-  WHILE x > 0 DO
+CONST
+    max 100,
+    pi = 3,
+    = 42;
+
+VAR
+    x, y, z
+    counter;
+
+PROCEDURE calcular
+    CONST
+        limite = 50;
+    VAR
+        temp, result;
     BEGIN
-      y := y + x;
-      x := x - 1
+        temp := x + y;
+        result := temp * 2
     END
-END.
+
+PROCEDURE mostrar;
+    CALL calcular;
+    
+BEGIN
+    x := 10;
+    y := 20;
+    z := x + y * 2;
+    
+    IF x > y THEN
+        z := x
+    ELSE
+        z := y;
+    
+    WHILE z < 100
+        BEGIN
+            z := z + 1;
+            IF ODD z THEN
+                CALL mostrar
+        END;
+    x := (10 + 20;
+    y := 5 * / 3;    
+    z := ;   
+    
+    counter := 1;
+    WHILE counter <= 5 DO
+        BEGIN
+            IF counter = 3
+                counter := counter + 2 
+            ELSE     
+                counter := counter + 1
+        END
+        
+    CALL;   
+    
+    BEGIN
+        x := 100
+        y := 200    
+        CALL mostrar;
+    END
+END       

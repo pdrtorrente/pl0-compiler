@@ -4,7 +4,6 @@
 #include <stdarg.h> 
 #include "parser.h"
 
-Token token_atual;
 FILE *fonte;
 int success = 1;
 
@@ -56,9 +55,9 @@ void erro(const char *mensagem, Token *token, FILE *input, ConjuntoSimbolos conj
     // Para erros sintáticos, ativa o modo pânico
     else {
         printf("Erro sintático (%s) na linha %d caracter %d\n", mensagem, token->line, token->caracter);
-        while (!pertence(token->type, conjunto_sincronizacao) && token_atual.type != TOKEN_EOF) {
+        while (!pertence(token->type, conjunto_sincronizacao) && token->type != TOKEN_EOF) {
             *token = getToken(input);
-        }
+        }  
     }
 }
 
@@ -78,16 +77,16 @@ void ASD_preditiva(FILE *input, Token *token) {
 }
 
 void programa(FILE *input, Token *token, ConjuntoSimbolos S) {
-    TokenType syncConst[] = { TOKEN_VAR, TOKEN_PROCEDURE, TOKEN_IDENTIFIER, TOKEN_CALL, TOKEN_BEGIN, TOKEN_IF, TOKEN_PERIOD, TOKEN_SEMICOLON };
-    constante(input, token, uniao(conjunto(8, syncConst), S));
+    TokenType syncConst[] = { TOKEN_VAR, TOKEN_PROCEDURE, TOKEN_CALL, TOKEN_BEGIN, TOKEN_IF, TOKEN_WHILE, TOKEN_PERIOD };
+    constante(input, token, uniao(conjunto(7, syncConst), S));
 
-    TokenType syncVar[] = { TOKEN_PROCEDURE, TOKEN_IDENTIFIER, TOKEN_CALL, TOKEN_BEGIN, TOKEN_IF, TOKEN_PERIOD, TOKEN_SEMICOLON };
-    variavel(input, token, uniao(conjunto(7, syncVar), S));
+    TokenType syncVar[] = { TOKEN_PROCEDURE, TOKEN_CALL, TOKEN_BEGIN, TOKEN_IF, TOKEN_WHILE, TOKEN_PERIOD };
+    variavel(input, token, uniao(conjunto(6, syncVar), S));
 
-    TokenType syncProc[] = { TOKEN_IDENTIFIER, TOKEN_CALL, TOKEN_BEGIN, TOKEN_IF, TOKEN_PERIOD, TOKEN_SEMICOLON };
-    procedimento(input, token, uniao(conjunto(6, syncProc), S));
+    TokenType syncProc[] = { TOKEN_CALL, TOKEN_BEGIN, TOKEN_IF, TOKEN_WHILE, TOKEN_PERIOD };
+    procedimento(input, token, uniao(conjunto(5, syncProc), S));
 
-    TokenType syncComand[] = { TOKEN_PERIOD, TOKEN_SEMICOLON };
+    TokenType syncComand[] = { TOKEN_PERIOD, TOKEN_EOF };
     comando(input, token, uniao(conjunto(2, syncComand), S));
 
     if(token->type == TOKEN_PERIOD) {
@@ -107,7 +106,6 @@ void constante(FILE *input, Token *token, ConjuntoSimbolos S) {
             TokenType sync[] = { TOKEN_EQUAL, TOKEN_NUMBER, TOKEN_SEMICOLON };
             erro("Esperado identificador", token, input, uniao(conjunto(3, sync), S));
             if (pertence(token->type, S)) return;
-            // *token = getToken(input);
         }
         
         if(token->type == TOKEN_EQUAL){
@@ -116,7 +114,6 @@ void constante(FILE *input, Token *token, ConjuntoSimbolos S) {
             TokenType sync[] = { TOKEN_NUMBER, TOKEN_COMMA };
             erro("Esperado '='", token, input, uniao(conjunto(2, sync), S));
             if (pertence(token->type, S)) return;
-            // *token = getToken(input);
         }
         
         if(token->type == TOKEN_NUMBER) {
@@ -125,7 +122,6 @@ void constante(FILE *input, Token *token, ConjuntoSimbolos S) {
             TokenType sync[] = { TOKEN_COMMA, TOKEN_SEMICOLON };
             erro("Esperado numero", token, input, uniao(conjunto(2, sync), S));
             if (pertence(token->type, S)) return;
-            // *token = getToken(input);
         }
 
         TokenType sync1[] = { TOKEN_SEMICOLON };
@@ -176,27 +172,24 @@ void mais_const(FILE *input, Token *token, ConjuntoSimbolos S) {
 void variavel(FILE *input, Token *token, ConjuntoSimbolos S) {
     if(token->type == TOKEN_VAR) {
         *token = getToken(input);
-    } else {
-        TokenType sync[] = { TOKEN_IDENTIFIER };
-        erro("Erro: esperado 'VAR'", token, input, uniao(conjunto(1, sync), S));
-        if (pertence(token->type, S)) return;
-    }
-    if(token->type == TOKEN_IDENTIFIER) {
-        *token = getToken(input);
-    } else {
-        TokenType sync[] = { TOKEN_COMMA, TOKEN_SEMICOLON };
-        erro("Esperado identificador", token, input, uniao(conjunto(2, sync), S));
-        if (pertence(token->type, S)) return;
-    }
-
-    TokenType sync1[] = { TOKEN_SEMICOLON };
-    mais_var(input, token, uniao(conjunto(1, sync1), S));
-
-    if (token->type == TOKEN_SEMICOLON) {
-        *token = getToken(input);
-    } else {
-        TokenType sync[] = { TOKEN_PROCEDURE, TOKEN_IDENTIFIER, TOKEN_CALL, TOKEN_BEGIN, TOKEN_IF, TOKEN_WHILE };
-        erro("Erro: ponto e vírgula esperado'", token, input, uniao(conjunto(6, sync), S));
+        if(token->type == TOKEN_IDENTIFIER) {
+            *token = getToken(input);
+        } else {
+            TokenType sync[] = { TOKEN_COMMA, TOKEN_SEMICOLON };
+            erro("Esperado identificador", token, input, uniao(conjunto(2, sync), S));
+            if (pertence(token->type, S)) return;
+        }
+    
+        TokenType sync1[] = { TOKEN_SEMICOLON };
+        mais_var(input, token, uniao(conjunto(1, sync1), S));
+    
+        if (token->type == TOKEN_SEMICOLON) {
+            *token = getToken(input);
+        } else {
+            TokenType sync[] = { TOKEN_PROCEDURE, TOKEN_IDENTIFIER, TOKEN_CALL, TOKEN_BEGIN, TOKEN_IF, TOKEN_WHILE };
+            erro("Esperado ';'", token, input, uniao(conjunto(6, sync), S));
+            if (pertence(token->type, S)) return;
+        }
     }
 }
 
@@ -209,6 +202,7 @@ void mais_var(FILE *input, Token *token, ConjuntoSimbolos S) {
         } else {
             TokenType sync[] = { TOKEN_COMMA, TOKEN_SEMICOLON };
             erro("Erro: identificador esperado após vírgula", token, input, uniao(conjunto(2, sync), S));
+            if (pertence(token->type, S)) return;
         }
     }
 }
